@@ -1,0 +1,54 @@
+# Deployment = "keep N copies of my container running, and if one dies, replace it."
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  namespace: demo-staging          # <-- change to YOUR staging project/namespace name
+  labels:
+    app: demo-app
+    env: staging
+spec:
+  replicas: 1                      # staging usually only needs 1 copy
+  selector:
+    matchLabels:
+      app: demo-app
+      env: staging
+  template:
+    metadata:
+      labels:
+        app: demo-app
+        env: staging
+    spec:
+      containers:
+        - name: demo-app
+          # This image gets pushed by your CI pipeline (GitHub Actions / Lightspeed / Jenkins).
+          # image-registry.openshift-image-registry.svc:5000 is OpenShift's INTERNAL registry address,
+          # only reachable from inside the cluster. Ask your platform team for the exact registry
+          # host if you're pushing from outside the cluster (e.g. from GitHub Actions).
+          image: image-registry.openshift-image-registry.svc:5000/demo-staging/demo-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "staging"
+          # Kubernetes/OpenShift use these to know when your app is alive and ready for traffic.
+          # They call the /actuator/health endpoints we enabled in application.yml.
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

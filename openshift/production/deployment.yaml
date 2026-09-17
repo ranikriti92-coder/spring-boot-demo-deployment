@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  namespace: demo-production       # <-- change to YOUR production project/namespace name
+  labels:
+    app: demo-app
+    env: production
+spec:
+  replicas: 2                      # production should run more than 1 copy for high availability
+  selector:
+    matchLabels:
+      app: demo-app
+      env: production
+  template:
+    metadata:
+      labels:
+        app: demo-app
+        env: production
+    spec:
+      containers:
+        - name: demo-app
+          # Note the tag: production should deploy a specific, tested version/tag
+          # (e.g. a git commit SHA or version number) — never ":latest" in production.
+          image: image-registry.openshift-image-registry.svc:5000/demo-production/demo-app:1.0.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "production"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"

@@ -1,0 +1,19 @@
+# Route = OpenShift's version of an Ingress. This is what exposes your Service
+# to the outside world with a public URL, e.g. https://demo-app-staging.apps.<cluster-domain>
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: demo-app
+  namespace: demo-staging
+  labels:
+    app: demo-app
+    env: staging
+spec:
+  to:
+    kind: Service
+    name: demo-app
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

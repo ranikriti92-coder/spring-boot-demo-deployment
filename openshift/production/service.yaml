@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app
+  namespace: demo-production
+  labels:
+    app: demo-app
+    env: production
+spec:
+  selector:
+    app: demo-app
+    env: production
+  ports:
+    - port: 8080
+      targetPort: 8080
