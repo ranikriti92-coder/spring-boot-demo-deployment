@@ -14,11 +14,11 @@ public class HelloController {
 
     @GetMapping("/")
     public String home() {
-        return "Hello! This Spring Boot app is running in the '" + environment + "' environment.";
+        return "Hello World! This Spring Boot app is running in the '" + environment + "' environment.";
     }
 
     @GetMapping("/api/version")
     public String version() {
-        return "demo-app v1 - environment=" + environment;
+        return "demo-app....v1 - environment=" + environment;
     }
 }
